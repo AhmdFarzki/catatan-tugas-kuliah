@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Catatan Tugas Kuliah</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://kit.fontawesome.com/f7eb667f30.js" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="text-center m-3 font-weight-bolder">Catatan Tugas Kuliah</h4>
+            </div>
+        </div>
+        <div class="row mt-5">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="row pb-2">
+                    <div class="add col-2">
+                        <button class="btn btn-success" data-toggle="modal" data-target="#add_modal" id="add"><span><i
+                                    class="fa fa-plus"></i></span> Tambah Tugas</button>
+                    </div>
+                </div>
+                <table class="table table-bordered table-striped ">
+                    <thead class="bg-primary">
+                        <tr class="text-white">
+                            <th>No.</th>
+                            <th>Nama Pelajaran</th>
+                            <th>Deskripsi</th>
+                            <th class="text-center"><span><i class="fa fa-cog"></i></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="view">
+                        <tr v-for="item, key in data_list">
+                            <td>{{ key + 1 }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.desk }}</td>
+                            <td class="text-center">
+                                <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#update_modal" @click="openUpdate(key)"><span><i class="fa fa-edit"></i></span></button>
+                                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete_modal" @click="openDelete(key)"><span><i class="fa fa-trash"></i></span></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="add_component">
+        <div class="modal fade" id="add_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content font-weight-bolder">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Tambah Tugas</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit="save" ref="add_form" method="POST">
+                            <div class="form-group">
+                                <label for="name">Nama Pelajaran</label>
+                                <input type="text" name="name" class="form-control" required v-model="name">
+                            </div>
+                            <div class="form-group mb-5">
+                                <label for="desk">Deskripsi Tugas</label>
+                                <input type="text" name="desk" class="form-control" required v-model="desk">
+                            </div>
+                            <input type="submit" name="save" id="save" class="btn btn-success" value="Save" />
+                            <input type="reset" class="btn btn-primary" />
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="update_component">
+        <div class="modal fade" id="update_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content font-weight-bolder">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit Tugas</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form @submit="save" ref="update_form" method="POST">
+                            <div class="form-group">
+                                <label for="name">Nama Pelajaran</label>
+                                <input type="text" name="name" class="form-control" required v-model="name">
+                            </div>
+                            <div class="form-group mb-5">
+                                <label for="desk">Deskripsi Tugas</label>
+                                <input type="text" name="desk" class="form-control" required v-model="desk">
+                            </div>
+                            <input type="submit" name="save" id="save" class="btn btn-success" value="Save" />
+                            <input type="reset" class="btn btn-primary" />
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete_component">
+        <div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content font-weight-bolder">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Apakah kamu yakin ingin menghapus tugas ?</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" @click="delete_yes">Yes</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" id="close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/popper.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <script type="text/javascript">
+        const view = new Vue({
+            el: '#view',
+            data: {
+                data_list: {
+                    name: '',
+                    desk: ''
+                }
+            },
+            mounted() {
+                this.get_data_list()
+            },
+            methods: {
+                get_data_localStorage() {
+                    if (localStorage.getItem("data_data_vuejs")) {
+                        var data = JSON.parse(localStorage.getItem("data_data_vuejs"));
+                        return data;
+                    }
+                },
+                get_data_list() {
+                    this.data_list = this.get_data_localStorage()
+                },
+                openDelete(key) {
+                    delete_component.index = key
+                },
+                openUpdate(key) {
+                    update_component.name = this.data_list[key].name
+                    update_component.desk = this.data_list[key].desk
+                    update_component.index = key
+                }
+            }
+        });
+        const add_component = new Vue({
+            el: '#add_component',
+            data: {
+                name: '',
+                desk: ''
+            },
+            methods: {
+                save(event) {
+                    event.preventDefault()
+                    var add_data = new FormData(this.$refs.add_form)
+                    let json_object_data = {}
+
+                    for (const [key, value] of add_data) {
+                        json_object_data[key] = value
+                    }
+
+                    if (window.localStorage.getItem('data_data_vuejs')) {
+                        var data_save = view.get_data_localStorage()
+                    } else {
+                        var data_save = new Array()
+                    }
+
+                    data_save.push(json_object_data);
+                    window.localStorage.setItem('data_data_vuejs', JSON.stringify(data_save))
+                    view.get_data_list()
+                    this.name = ''
+                    this.desk = ''
+                    $('#add_modal').modal('hide')
+                    $(".modal-fade").modal("hide")
+                    $(".modal-backdrop").remove()
+                }
+            },
+        });
+
+        const delete_component = new Vue({
+            el: '#delete_component',
+            data: {
+                index: ''
+            },
+            methods: {
+                delete_yes() {
+                    var data = view.get_data_localStorage()
+                    data.splice(this.index, 1)
+
+                    window.localStorage.setItem('data_data_vuejs', JSON.stringify(data))
+                    view.get_data_list()
+                    $('#delete_modal').modal('hide')
+                    $(".modal-fade").modal("hide")
+                    $(".modal-backdrop").remove()
+                }
+            }
+        });
+
+        const update_component = new Vue({
+            el: '#update_component',
+            data: {
+                index: '',
+                name: '',
+                desk: ''
+            },
+            methods: {
+                save(event) {
+                    event.preventDefault()
+                    var update_data = new FormData(this.$refs.update_form)
+                    let json_object_data = {}
+
+                    for (const [key, value] of update_data) {
+                        json_object_data[key] = value
+                    }
+
+                    var data_save = view.get_data_localStorage()
+                    data_save.splice(this.index, 1, json_object_data)
+                    window.localStorage.setItem('data_data_vuejs', JSON.stringify(data_save))
+                    view.get_data_list()
+                    $('#update_modal').modal('hide')
+                    $(".modal-fade").modal("hide")
+                    $(".modal-backdrop").remove()
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
